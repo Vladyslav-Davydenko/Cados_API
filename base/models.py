@@ -1,3 +1,11 @@
 from django.db import models
+import uuid
 
-# Create your models here.
+
+class Advocate(models.Model):
+    username = models.CharField(max_length=255)
+    bio = models.TextField(null = True, blank=True)
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+
+    def __str__(self) -> str:
+        return self.username
