@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from .models import Advocate, Company
 from .serializers import AdvocateSerializer, CompanySerializer
@@ -15,11 +16,15 @@ def getRoutes(request):
         {"GET":"advocates/<str:username>"},
         #Company
         {"GET":"companies"},
+        #Token
+        {"GET":"token"},
+        {"GET":"tokrn/refresh"},
     ]
     return Response(routes)
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def advocate_list(request):
     if request.method == "GET":
         query = request.GET.get('query')
@@ -41,6 +46,7 @@ def advocate_list(request):
         return Response(serializer.data)
 
 
+@permission_classes([IsAuthenticated])
 class AdvocateDetail(APIView):
     def get_object(self, username):
         try:
@@ -103,3 +109,17 @@ def company_list(request):
     )
     serializer = CompanySerializer(companies, many=True)
     return Response(serializer.data)
+
+
+@permission_classes([IsAuthenticated])
+class CompanyDetail(APIView):
+    def get_object(self, name):
+        try:
+            return Company.objects.get(name=name)
+        except Company.DoesNotExist:
+            return Response("Company does not exist")
+    
+    def get(self, request, name):
+        company = self.get_object(name)
+        serializer = CompanySerializer(company, many=False)
+        return Response(serializer.data)
