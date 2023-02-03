@@ -123,3 +123,9 @@ class CompanyDetail(APIView):
         company = self.get_object(name)
         serializer = CompanySerializer(company, many=False)
         return Response(serializer.data)
+
+
+def mainPage(request):
+    advocates = Advocate.objects.all()
+    context = {"advocates": advocates}
+    return render(request, 'main.html', context)
